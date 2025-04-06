@@ -43,7 +43,9 @@ func (pw *Visualizer) Update(t screen.Texture) {
 
 func (pw *Visualizer) run(s screen.Screen) {
 	w, err := s.NewWindow(&screen.NewWindowOptions{
-		Title: pw.Title,
+		Title:  pw.Title,
+		Width:  800,
+		Height: 800,
 	})
 	if err != nil {
 		log.Fatal("Failed to initialize the app window:", err)
@@ -131,12 +133,45 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 }
 
 func (pw *Visualizer) drawDefaultUI() {
-	pw.w.Fill(pw.sz.Bounds(), color.Black, draw.Src) // Фон.
+	pw.w.Fill(pw.sz.Bounds(), color.RGBA{R: 174, G: 255, B: 168}, draw.Src) // Фон.
 
+	//pw.w.Fill(pw.sz.Bounds(), color.RGBA{R: 105, G: 255, B: 94}, draw.Src)
+	x := pw.sz.WidthPx / 2
+	y := pw.sz.HeightPx / 2
+	log.Printf("%f", x)
+	log.Printf("%f", y)
+	pw.drawShape(x, y)
+
+	//rect := image.Rect(50, 50, 200, 150) // x0, y0, x1, y1
+	//pw.w.Fill(rect, color.RGBA{R: 255, G: 230, B: 69}, draw.Src)
+	//w, h := 100, 50
+	//x, y := 200, 200
+	//rotatedRect := image.Rect(x-h, y, x, y+w)
+	//pw.w.Fill(rotatedRect, color.RGBA{R: 255, G: 230, B: 69}, draw.Src)
 	// TODO: Змінити колір фону та додати відображення фігури у вашому варіанті.
 
 	// Малювання білої рамки.
 	for _, br := range imageutil.Border(pw.sz.Bounds(), 10) {
 		pw.w.Fill(br, color.White, draw.Src)
 	}
+}
+
+func (pw *Visualizer) drawShape(x, y int) {
+	s := 200
+	shapeColor := color.RGBA{R: 255, G: 230, B: 69}
+
+	x0_0 := x - s
+	y0_0 := y - s
+	x1_0 := x + s
+	y1_0 := y
+	rect_0 := image.Rect(x0_0, y0_0, x1_0, y1_0)
+
+	x0_1 := x - (s / 2)
+	y0_1 := y
+	x1_1 := x + (s / 2)
+	y1_1 := y + s
+	rect_1 := image.Rect(x0_1, y0_1, x1_1, y1_1)
+
+	pw.w.Fill(rect_0, shapeColor, draw.Src)
+	pw.w.Fill(rect_1, shapeColor, draw.Src)
 }
