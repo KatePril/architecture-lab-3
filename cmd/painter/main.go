@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/roman-mazur/architecture-lab-3/painter"
-	"github.com/roman-mazur/architecture-lab-3/painter/lang"
-	"github.com/roman-mazur/architecture-lab-3/ui"
+	"github.com/KatePril/architecture-lab-3/painter"
+	"github.com/KatePril/architecture-lab-3/painter/lang"
+	"github.com/KatePril/architecture-lab-3/ui"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 		parser lang.Parser  // Парсер команд.
 	)
 
-	//pv.Debug = true
+	pv.Debug = true
 	pv.Title = "Simple painter"
 
 	pv.OnScreenReady = opLoop.Start
