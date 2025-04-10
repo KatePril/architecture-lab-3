@@ -1,6 +1,7 @@
 package lang
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -19,6 +20,7 @@ func HttpHandler(loop *painter.Loop, p *Parser) http.Handler {
 		}
 
 		cmds, err := p.Parse(in)
+		fmt.Println("Query:", in)
 		if err != nil {
 			log.Printf("Bad script: %s", err)
 			rw.WriteHeader(http.StatusBadRequest)
