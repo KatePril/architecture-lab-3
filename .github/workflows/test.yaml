@@ -23,6 +23,9 @@ jobs:
         with:
           go-version: 1.24
 
+      - name: Clean
+        run: rm -rf out
+
 #      - name: Install dependencies
 #        run: go mod tidy
 
@@ -33,9 +36,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Clean
+        run: rm -rf out
+
       - name: Build
         run: |
-          go mod tidy
           mkdir -p out
           go build -o out/painter ./cmd/painter
 
