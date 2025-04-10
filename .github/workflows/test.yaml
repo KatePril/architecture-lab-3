@@ -3,7 +3,9 @@ name: Go Test
 on:
   push:
     branches:
-      - [main, ci]
+      - main
+      - ci
+
   pull_request:
     branches:
       - main
