@@ -149,8 +149,6 @@ func (pw *Visualizer) drawDefaultUI(x, y *int) {
 		y = &defaultY
 	}
 
-	log.Printf("%f", *x)
-	log.Printf("%f", *y)
 	pw.drawShape(*x, *y)
 
 	// Малювання білої рамки.
