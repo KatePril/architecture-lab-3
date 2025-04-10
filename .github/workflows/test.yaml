@@ -29,5 +29,18 @@ jobs:
       - name: Run tests
         run: go test ./... -v
 
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Build
-        run: go build ./...
+        run: |
+          go mod tidy
+          mkdir -p out
+          go build -o out/painter ./cmd/painter
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-painter
+          path: out/painter
