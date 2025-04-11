@@ -149,9 +149,7 @@ func (pw *Visualizer) drawDefaultUI(x, y *int) {
 		y = &defaultY
 	}
 
-	log.Printf("%f", *x)
-	log.Printf("%f", *y)
-	pw.drawShape(*x, *y)
+	DrawShape(pw.w.Fill, *x, *y, 1)
 
 	// Малювання білої рамки.
 	for _, br := range imageutil.Border(pw.sz.Bounds(), 10) {
@@ -159,23 +157,24 @@ func (pw *Visualizer) drawDefaultUI(x, y *int) {
 	}
 }
 
-func (pw *Visualizer) drawShape(x, y int) {
-	s := 200
-	shapeColor := color.RGBA{R: 255, G: 230, B: 69}
+func DrawShape(Fill func(dr image.Rectangle, src color.Color, op draw.Op), x, y int, scale float64) {
+	s := 100
+	shapeColor := color.RGBA{R: 255, G: 230, B: 69, A: 255}
+	scaledS := int(float64(s) * scale)
 
 	rotate := func(px, py int) (int, int) {
 		px, py = px-x, py-y
 		return x + py, y - px
 	}
 
-	x00, y00 := rotate(x-s, y-s)
-	x10, y10 := rotate(x+s, y)
-	rect0 := image.Rect(x00, y00, x10, y10)
+	x00, y00 := rotate(x-scaledS, y-scaledS)
+	x10, y10 := rotate(x+scaledS, y)
+	rect0 := image.Rect(x00, y00, x10, y10).Canon()
 
-	x01, y01 := rotate(x-(s/2), y)
-	x11, y11 := rotate(x+(s/2), y+s)
-	rect1 := image.Rect(x01, y01, x11, y11)
+	x01, y01 := rotate(x-(scaledS/2), y)
+	x11, y11 := rotate(x+(scaledS/2), y+scaledS)
+	rect1 := image.Rect(x01, y01, x11, y11).Canon()
 
-	pw.w.Fill(rect0, shapeColor, draw.Src)
-	pw.w.Fill(rect1, shapeColor, draw.Src)
+	Fill(rect0, shapeColor, draw.Src)
+	Fill(rect1, shapeColor, draw.Src)
 }
