@@ -2,7 +2,9 @@ package lang
 
 import (
 	"bufio"
+	"fmt"
 	"io"
+	"strings"
 
 	"github.com/KatePril/architecture-lab-3/painter"
 )
@@ -44,5 +46,29 @@ func (p *OperationParser) Parse(in io.Reader) ([]painter.Operation, error) {
 }
 
 func (p *OperationParser) parseLine(commandLine string) (painter.Operation, error) {
-	return nil, nil
+	commandLineSlice := strings.Fields(commandLine)
+	length := len(commandLineSlice)
+	if length == 0 {
+		return nil, nil
+	}
+
+	commandName := strings.ToLower(commandLineSlice[0])
+	var args []string
+	if length > 1 {
+		args = commandLineSlice[1:]
+	} else {
+		args = []string{}
+	}
+
+	getOperationFunc, ok := p.dictionary[commandName]
+	if !ok {
+		return nil, fmt.Errorf(commandName + " is not a valid command")
+	}
+
+	operation, err := getOperationFunc(args)
+	if err != nil {
+		return nil, err
+	}
+
+	return operation, nil
 }
