@@ -19,6 +19,11 @@ type OperationParser struct {
 	dictionary map[string]GetOperationFunc
 }
 
+func CreateOperationParser(state *painter.State) *OperationParser {
+	dictionary := setOperationDictionary(state)
+	return &OperationParser{dictionary: dictionary}
+}
+
 func (p *OperationParser) Parse(in io.Reader) ([]painter.Operation, error) {
 	scanner := bufio.NewScanner(in)
 	scanner.Split(bufio.ScanLines)
