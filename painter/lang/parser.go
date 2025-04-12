@@ -3,10 +3,11 @@ package lang
 import (
 	"bufio"
 	"fmt"
-	"github.com/KatePril/architecture-lab-3/painter"
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/KatePril/architecture-lab-3/painter"
 )
 
 type Parser interface {
