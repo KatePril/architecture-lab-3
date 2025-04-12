@@ -11,7 +11,10 @@ type Parser interface {
 	Parse(in io.Reader) ([]painter.Operation, error)
 }
 
+type GetOperationFunc func(args []string) (painter.Operation, error)
+
 type OperationParser struct {
+	dictionary map[string]GetOperationFunc
 }
 
 func (p *OperationParser) Parse(in io.Reader) ([]painter.Operation, error) {
