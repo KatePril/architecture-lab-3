@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"net/http"
 
 	"github.com/KatePril/architecture-lab-3/painter"
@@ -22,9 +23,15 @@ func main() {
 
 	pv.OnScreenReady = opLoop.Start
 	opLoop.Receiver = &pv
+	state := &painter.State{
+		BackgroundColor: color.White,
+		BgRect:          &painter.FigureRect{X0: 0, Y0: 0, X1: 100, Y1: 100},
+		Figures:         []painter.FigureT{},
+	}
+	parser = lang.CreateOperationParser(state)
 
 	go func() {
-		http.Handle("/", lang.HttpHandler(&opLoop, &parser))
+		http.Handle("/", lang.HttpHandler(&opLoop, parser))
 		_ = http.ListenAndServe("localhost:17000", nil)
 	}()
 

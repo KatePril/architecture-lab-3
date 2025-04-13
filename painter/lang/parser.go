@@ -68,7 +68,7 @@ func (p *OperationParser) parseLine(commandLine string) (painter.Operation, erro
 
 	getOperationFunc, ok := p.dictionary[commandName]
 	if !ok {
-		return nil, fmt.Errorf(commandName + " is not a valid command")
+		return nil, fmt.Errorf("%s", commandName+" is not a valid command")
 	}
 
 	operation, err := getOperationFunc(args)
@@ -80,7 +80,7 @@ func (p *OperationParser) parseLine(commandLine string) (painter.Operation, erro
 }
 
 func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
-	var dictionary map[string]GetOperationFunc
+	dictionary := make(map[string]GetOperationFunc)
 
 	dictionary["update"] = func(args []string) (painter.Operation, error) {
 		return painter.UpdateOp, nil
