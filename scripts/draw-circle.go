@@ -31,7 +31,7 @@ func main() {
 	commands := []string{
 		"reset",
 		"green",
-		"bgrect 100 100 300 300",
+		"bgrect 0.25 0.25 0.75 0.75", // Scaled down to fit 0-1.0 range
 	}
 
 	for _, cmd := range commands {
@@ -41,9 +41,9 @@ func main() {
 		}
 	}
 
-	// Create figure at center
-	if err := sendPostRequest("figure 200 200"); err != nil {
-		fmt.Printf("Error sending command 'figure 200 200': %v\n", err)
+	// Create figure at center (0.5, 0.5 in new coordinates)
+	if err := sendPostRequest("figure 0.5 0.5"); err != nil {
+		fmt.Printf("Error sending command 'figure 0.5 0.5': %v\n", err)
 		return
 	}
 
@@ -54,8 +54,8 @@ func main() {
 
 	// Animation parameters
 	count := 0
-	radius := 100.0 // Smaller radius to stay within visible area
-	centerX, centerY := 200.0, 200.0
+	radius := 0.25 // Smaller radius to stay within visible area (scaled from 100/400)
+	centerX, centerY := 0.5, 0.5
 	timeStep := 50 * time.Millisecond // 20 frames per second
 	angularSpeed := 2.0               // degrees per frame
 	angle := 0.0
@@ -74,7 +74,7 @@ func main() {
 		x := centerX + radius*math.Cos(radians)
 		y := centerY + radius*math.Sin(radians)
 
-		moveCommand := fmt.Sprintf("move %.0f %.0f", x, y)
+		moveCommand := fmt.Sprintf("move %.4f %.4f", x, y)
 		if err := sendPostRequest(moveCommand); err != nil {
 			fmt.Printf("Error sending command '%s': %v\n", moveCommand, err)
 			return

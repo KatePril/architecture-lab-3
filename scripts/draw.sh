@@ -11,23 +11,13 @@ curl -X POST \
 
 curl -X POST \
   -H "Content-Type: text/plain" \
-  -d 'bgrect 100 100 300 300' \
+  -d 'bgrect 0.25 0.25 0.75 0.75' \
   http://localhost:17000/
 
-# DEBUG POINT START (REMOVE WHEN SENDING)
 
 curl -X POST \
   -H "Content-Type: text/plain" \
-  -d 'update' \
-  http://localhost:17000/
-
-sleep 2
-
-# DEBUG POINT END
-
-curl -X POST \
-  -H "Content-Type: text/plain" \
-  -d 'figure 200 200' \
+  -d 'figure 0.5 0.5' \
   http://localhost:17000/
 
 curl -X POST \
@@ -36,14 +26,15 @@ curl -X POST \
   http://localhost:17000/
 
 count=0
-step=2
+steps=50
+step=$(echo "scale=4; 1.0 / $steps" | bc)
 
-while [ $count -lt 50 ]
+while [ $count -lt $steps ]
 do
-    count=$((count+1))
+    pos=$(echo "scale=4; $count * $step" | bc)
     curl -X POST \
       -H "Content-Type: text/plain" \
-      -d "move $((200+count*step)) $((200+count*step))" \
+      -d "move $pos $pos" \
       http://localhost:17000/
 
     curl -X POST \
@@ -51,4 +42,6 @@ do
       -d 'update' \
       http://localhost:17000/
 
+    count=$((count + 1))
+    sleep 0.05
 done
