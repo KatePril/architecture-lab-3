@@ -94,14 +94,19 @@ func MakeGreenFillOp(state *State) Operation {
 
 func MakeBgRectOp(state *State, x0, y0, x1, y1 int) Operation {
 	return OperationFunc(func(t screen.Texture) {
-		state.BgRect = &FigureRect{x0, y0, x1, y1}
+
+		state.BgRect = &FigureRect{
+			X0: t.Size().X * x0,
+			Y0: t.Size().Y * y0,
+			X1: t.Size().X * x1,
+			Y1: t.Size().Y * y1}
 		repaint(state, t)
 	})
 }
 
 func MakeFigureOp(state *State, x, y int) Operation {
 	return OperationFunc(func(t screen.Texture) {
-		state.Figures = append(state.Figures, FigureT{x, y})
+		state.Figures = append(state.Figures, FigureT{t.Size().X * x, t.Size().Y * y})
 		repaint(state, t)
 	})
 }
@@ -110,7 +115,7 @@ func MakeMoveOp(state *State, x, y int) Operation {
 	return OperationFunc(func(t screen.Texture) {
 		newFigures := make([]FigureT, len(state.Figures))
 		for i := range state.Figures {
-			newFigures[i] = FigureT{x, y}
+			newFigures[i] = FigureT{t.Size().X * x, t.Size().Y * y}
 		}
 		state.Figures = newFigures
 
@@ -118,10 +123,10 @@ func MakeMoveOp(state *State, x, y int) Operation {
 		sizeY := (state.BgRect.Y1 - state.BgRect.Y0) / 2
 
 		state.BgRect = &FigureRect{
-			X0: x - sizeX,
-			Y0: y - sizeY,
-			X1: x + sizeX,
-			Y1: y + sizeY,
+			X0: t.Size().X*x - sizeX,
+			Y0: t.Size().Y*y - sizeY,
+			X1: t.Size().X*x + sizeX,
+			Y1: t.Size().Y*y + sizeY,
 		}
 
 		repaint(state, t)
