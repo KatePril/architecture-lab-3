@@ -2,6 +2,7 @@ package painter
 
 import (
 	"image"
+	"sync"
 
 	"golang.org/x/exp/shiny/screen"
 )
@@ -30,31 +31,65 @@ var size = image.Pt(400, 400)
 func (l *Loop) Start(s screen.Screen) {
 	l.next, _ = s.NewTexture(size)
 	l.prev, _ = s.NewTexture(size)
-
-	// TODO: стартувати цикл подій.
+	l.stop = make(chan struct{})
+	go func() {
+		defer close(l.stop)
+		for !l.stopReq || !l.mq.empty() {
+			op := l.mq.pull()
+			if update := op.Do(l.next); update {
+				l.Receiver.Update(l.next)
+				l.next, l.prev = l.prev, l.next
+			}
+		}
+	}()
 }
 
 // Post додає нову операцію у внутрішню чергу.
 func (l *Loop) Post(op Operation) {
-	if update := op.Do(l.next); update {
-		l.Receiver.Update(l.next)
-		l.next, l.prev = l.prev, l.next
-	}
+ 	l.mq.push(op)
 }
 
 // StopAndWait сигналізує про необхідність завершити цикл та блокується до моменту його повної зупинки.
 func (l *Loop) StopAndWait() {
+	l.Post(OperationFunc(func(t screen.Texture) {
+		l.stopReq = true
+	}))
+	<-l.stop
 }
 
 // TODO: Реалізувати чергу подій.
-type messageQueue struct{}
+type messageQueue struct{
+	notify chan struct{}
+	mutex sync.Mutex
+	ops []Operation
+}
 
-func (mq *messageQueue) push(op Operation) {}
+func (mq *messageQueue) push(op Operation) {
+	mq.mutex.Lock()
+	defer mq.mutex.Unlock()
+	mq.ops = append(mq.ops, op)
+	if mq.notify != nil {
+		close(mq.notify)
+		mq.notify = nil
+	}
+}
 
 func (mq *messageQueue) pull() Operation {
-	return nil
+	mq.mutex.Lock()
+	defer mq.mutex.Unlock()
+	if len(mq.ops) == 0 {
+		n := make(chan struct{})
+		mq.notify = n
+		mq.mutex.Unlock()
+		<-n
+		mq.mutex.Lock()
+	}
+	res := mq.ops[0]
+	mq.ops[0] = nil
+	mq.ops = mq.ops[1:]
+	return res
 }
 
 func (mq *messageQueue) empty() bool {
-	return false
+	return len(mq.ops) == 0
 }
