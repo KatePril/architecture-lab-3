@@ -25,7 +25,7 @@ func main() {
 	opLoop.Receiver = &pv
 	state := &painter.State{
 		BackgroundColor: color.White,
-		BgRect:          &painter.FigureRect{X0: 0, Y0: 0, X1: 100, Y1: 100},
+		BgRect:          nil,
 		Figures:         []painter.FigureT{},
 	}
 	parser = lang.CreateOperationParser(state)

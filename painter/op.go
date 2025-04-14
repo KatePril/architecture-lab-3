@@ -92,25 +92,35 @@ func MakeGreenFillOp(state *State) Operation {
 	})
 }
 
-func MakeBgRectOp(state *State, x0, y0, x1, y1 int) Operation {
+func MakeBgRectOp(state *State, x0, y0, x1, y1 float32) Operation {
 	return OperationFunc(func(t screen.Texture) {
-		state.BgRect = &FigureRect{x0, y0, x1, y1}
+
+		state.BgRect = &FigureRect{
+			X0: int(float32(t.Size().X) * x0),
+			Y0: int(float32(t.Size().Y) * y0),
+			X1: int(float32(t.Size().X) * x1),
+			Y1: int(float32(t.Size().Y) * y1)}
 		repaint(state, t)
 	})
 }
 
-func MakeFigureOp(state *State, x, y int) Operation {
+func MakeFigureOp(state *State, x, y float32) Operation {
 	return OperationFunc(func(t screen.Texture) {
-		state.Figures = append(state.Figures, FigureT{x, y})
+		state.Figures = append(state.Figures, FigureT{
+			X: int(float32(t.Size().X) * x),
+			Y: int(float32(t.Size().Y) * y)})
 		repaint(state, t)
 	})
 }
 
-func MakeMoveOp(state *State, x, y int) Operation {
+func MakeMoveOp(state *State, x, y float32) Operation {
 	return OperationFunc(func(t screen.Texture) {
+		xCoord := int(float32(t.Size().X) * x)
+		yCoord := int(float32(t.Size().Y) * y)
+
 		newFigures := make([]FigureT, len(state.Figures))
 		for i := range state.Figures {
-			newFigures[i] = FigureT{x, y}
+			newFigures[i] = FigureT{xCoord, yCoord}
 		}
 		state.Figures = newFigures
 
@@ -118,10 +128,10 @@ func MakeMoveOp(state *State, x, y int) Operation {
 		sizeY := (state.BgRect.Y1 - state.BgRect.Y0) / 2
 
 		state.BgRect = &FigureRect{
-			X0: x - sizeX,
-			Y0: y - sizeY,
-			X1: x + sizeX,
-			Y1: y + sizeY,
+			X0: xCoord - sizeX,
+			Y0: yCoord - sizeY,
+			X1: xCoord + sizeX,
+			Y1: yCoord + sizeY,
 		}
 
 		repaint(state, t)
