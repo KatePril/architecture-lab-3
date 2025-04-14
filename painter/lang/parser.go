@@ -100,15 +100,15 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 			return nil, fmt.Errorf("invalid arguments")
 		}
 
-		var parsedArgs [rightNumOfArgs]int
+		var parsedArgs [rightNumOfArgs]float32
 
 		for i := 0; i < rightNumOfArgs; i++ {
-			parsed, err := strconv.Atoi(args[i])
+			parsed, err := strconv.ParseFloat(args[i], 32)
 			if err != nil {
 				return nil, fmt.Errorf("invalid arguments")
 			}
 
-			parsedArgs[i] = parsed
+			parsedArgs[i] = float32(parsed)
 		}
 
 		return painter.MakeBgRectOp(state, parsedArgs[0], parsedArgs[1], parsedArgs[2], parsedArgs[3]), nil
@@ -120,15 +120,15 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 			return nil, fmt.Errorf("invalid arguments")
 		}
 
-		var parsedArgs [rightNumOfArgs]int
+		var parsedArgs [rightNumOfArgs]float32
 
 		for i := 0; i < rightNumOfArgs; i++ {
-			parsed, err := strconv.Atoi(args[i])
+			parsed, err := strconv.ParseFloat(args[i], 32)
 			if err != nil {
 				return nil, fmt.Errorf("invalid arguments")
 			}
 
-			parsedArgs[i] = parsed
+			parsedArgs[i] = float32(parsed)
 		}
 
 		return painter.MakeFigureOp(state, parsedArgs[0], parsedArgs[1]), nil
@@ -140,15 +140,15 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 			return nil, fmt.Errorf("invalid arguments")
 		}
 
-		var parsedArgs [rightNumOfArgs]int
+		var parsedArgs [rightNumOfArgs]float32
 
 		for i := 0; i < rightNumOfArgs; i++ {
-			parsed, err := strconv.Atoi(args[i])
+			parsed, err := strconv.ParseFloat(args[i], 32)
 			if err != nil {
 				return nil, fmt.Errorf("invalid arguments")
 			}
 
-			parsedArgs[i] = parsed
+			parsedArgs[i] = float32(parsed)
 		}
 
 		return painter.MakeMoveOp(state, parsedArgs[0], parsedArgs[1]), nil
