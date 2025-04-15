@@ -2,7 +2,7 @@ package lang
 
 import (
 	"bufio"
-	"fmt"
+	lang "github.com/KatePril/architecture-lab-3/painter/lang/errors"
 	"io"
 	"strconv"
 	"strings"
@@ -68,7 +68,7 @@ func (p *OperationParser) parseLine(commandLine string) (painter.Operation, erro
 
 	getOperationFunc, ok := p.dictionary[commandName]
 	if !ok {
-		return nil, fmt.Errorf("%s", commandName+" is not a valid command")
+		return nil, lang.InvalidCommandError{CommandName: commandName}
 	}
 
 	operation, err := getOperationFunc(args)
@@ -97,7 +97,7 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 	dictionary["bgrect"] = func(args []string) (painter.Operation, error) {
 		const rightNumOfArgs int = 4
 		if len(args) != rightNumOfArgs {
-			return nil, fmt.Errorf("invalid arguments")
+			return nil, lang.InvalidArgumentsError{}
 		}
 
 		var parsedArgs [rightNumOfArgs]float32
@@ -105,7 +105,7 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 		for i := 0; i < rightNumOfArgs; i++ {
 			parsed, err := strconv.ParseFloat(args[i], 32)
 			if err != nil {
-				return nil, fmt.Errorf("invalid arguments")
+				return nil, lang.InvalidArgumentsError{}
 			}
 
 			parsedArgs[i] = float32(parsed)
@@ -117,7 +117,7 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 	dictionary["figure"] = func(args []string) (painter.Operation, error) {
 		const rightNumOfArgs int = 2
 		if len(args) != rightNumOfArgs {
-			return nil, fmt.Errorf("invalid arguments")
+			return nil, lang.InvalidArgumentsError{}
 		}
 
 		var parsedArgs [rightNumOfArgs]float32
@@ -125,7 +125,7 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 		for i := 0; i < rightNumOfArgs; i++ {
 			parsed, err := strconv.ParseFloat(args[i], 32)
 			if err != nil {
-				return nil, fmt.Errorf("invalid arguments")
+				return nil, lang.InvalidArgumentsError{}
 			}
 
 			parsedArgs[i] = float32(parsed)
@@ -137,7 +137,7 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 	dictionary["move"] = func(args []string) (painter.Operation, error) {
 		const rightNumOfArgs int = 2
 		if len(args) != rightNumOfArgs {
-			return nil, fmt.Errorf("invalid arguments")
+			return nil, lang.InvalidArgumentsError{}
 		}
 
 		var parsedArgs [rightNumOfArgs]float32
@@ -145,7 +145,7 @@ func setOperationDictionary(state *painter.State) map[string]GetOperationFunc {
 		for i := 0; i < rightNumOfArgs; i++ {
 			parsed, err := strconv.ParseFloat(args[i], 32)
 			if err != nil {
-				return nil, fmt.Errorf("invalid arguments")
+				return nil, lang.InvalidArgumentsError{}
 			}
 
 			parsedArgs[i] = float32(parsed)
