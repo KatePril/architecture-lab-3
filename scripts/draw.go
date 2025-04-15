@@ -1,3 +1,6 @@
+//go:build ignoretest
+// +build ignoretest
+
 package main
 
 import (

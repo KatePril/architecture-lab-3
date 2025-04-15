@@ -1,3 +1,6 @@
+//go:build ignoretest
+// +build ignoretest
+
 package main
 
 import (
@@ -8,7 +11,7 @@ import (
 	"time"
 )
 
-func sendPostRequest(data string) error {
+func sendPostRequestCircle(data string) error {
 	url := "http://localhost:17000/"
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))
 	if err != nil {
@@ -35,19 +38,19 @@ func main() {
 	}
 
 	for _, cmd := range commands {
-		if err := sendPostRequest(cmd); err != nil {
+		if err := sendPostRequestCircle(cmd); err != nil {
 			fmt.Printf("Error sending command '%s': %v\n", cmd, err)
 			return
 		}
 	}
 
 	// Create figure at center (0.5, 0.5 in new coordinates)
-	if err := sendPostRequest("figure 0.5 0.5"); err != nil {
+	if err := sendPostRequestCircle("figure 0.5 0.5"); err != nil {
 		fmt.Printf("Error sending command 'figure 0.5 0.5': %v\n", err)
 		return
 	}
 
-	if err := sendPostRequest("update"); err != nil {
+	if err := sendPostRequestCircle("update"); err != nil {
 		fmt.Printf("Error sending command 'update': %v\n", err)
 		return
 	}
@@ -75,12 +78,12 @@ func main() {
 		y := centerY + radius*math.Sin(radians)
 
 		moveCommand := fmt.Sprintf("move %.4f %.4f", x, y)
-		if err := sendPostRequest(moveCommand); err != nil {
+		if err := sendPostRequestCircle(moveCommand); err != nil {
 			fmt.Printf("Error sending command '%s': %v\n", moveCommand, err)
 			return
 		}
 
-		if err := sendPostRequest("update"); err != nil {
+		if err := sendPostRequestCircle("update"); err != nil {
 			fmt.Printf("Error sending command 'update': %v\n", err)
 			return
 		}
