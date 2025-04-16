@@ -165,6 +165,38 @@ func TestMakeMoveOp(t *testing.T) {
 	}
 }
 
+func TestMakeResetOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+		state State
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeFigureOp(&state, 1, 2))
+	loop.Post(MakeBgRectOp(&state, 1, 2, 3, 4))
+	loop.Post(MakeMoveOp(&state, 1, 2))
+	loop.Post(MakeResetOp(&state))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 12 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	if texture.Colors[11] != color.Black {
+		t.Fatal("Invalid last color, should be black")
+	}
+	if state.BgRect != nil || state.Figures != nil {
+		t.Fatal("Sate is not nulled")
+	}
+}
+
 type testReceiver struct {
 	lastTexture screen.Texture
 }
