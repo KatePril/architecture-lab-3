@@ -10,59 +10,190 @@ import (
 	"golang.org/x/exp/shiny/screen"
 )
 
-func TestLoop_Post(t *testing.T) {
+func TestOrder(t *testing.T) {
 	var (
-		l  Loop
-		tr testReceiver
+		loop  Loop
+		receiver testReceiver
 	)
-	l.Receiver = &tr
-
-	var testOps []string
-
-	l.Start(mockScreen{})
-	l.Post(logOp(t, "do white fill", WhiteFill))
-	l.Post(logOp(t, "do green fill", GreenFill))
-	l.Post(UpdateOp)
-
-	for i := 0; i < 3; i++ {
-		go l.Post(logOp(t, "do green fill", GreenFill))
-	}
-
-	l.Post(OperationFunc(func(screen.Texture) {
-		testOps = append(testOps, "op 1")
-		l.Post(OperationFunc(func(screen.Texture) {
-			testOps = append(testOps, "op 2")
+	loop.Receiver = &receiver
+	var operations []int
+	loop.Start(mockScreen{})
+	loop.Post(OperationFunc(func(screen.Texture) {
+		operations = append(operations, 1)
+		loop.Post(OperationFunc(func(screen.Texture) {
+			operations = append(operations, 3)
 		}))
 	}))
-	l.Post(OperationFunc(func(screen.Texture) {
-		testOps = append(testOps, "op 3")
+	loop.Post(OperationFunc(func(screen.Texture) {
+		operations = append(operations, 2)
 	}))
-
-	l.StopAndWait()
-
-	if tr.lastTexture == nil {
-		t.Fatal("Texture was not updated")
-	}
-	mt, ok := tr.lastTexture.(*mockTexture)
-	if !ok {
-		t.Fatal("Unexpected texture", tr.lastTexture)
-	}
-	if mt.Colors[0] != color.White {
-		t.Error("First color is not white:", mt.Colors)
-	}
-	if len(mt.Colors) != 2 {
-		t.Error("Unexpected size of colors:", mt.Colors)
-	}
-
-	if !reflect.DeepEqual(testOps, []string{"op 1", "op 2", "op 3"}) {
-		t.Error("Bad order:", testOps)
+	loop.StopAndWait()
+	if !reflect.DeepEqual([]int{ 1, 2, 3 }, operations) {
+		t.Error("Bad order:", operations)
 	}
 }
 
-func logOp(t *testing.T, msg string, op OperationFunc) OperationFunc {
-	return func(tx screen.Texture) {
-		t.Log(msg)
-		op(tx)
+func TestMakeWhiteFillOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeWhiteFillOp(&State{}))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 1 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	if texture.Colors[0] != color.White {
+		t.Fatal("Invalid color, should be white")
+	}
+}
+
+func TestMakeGreenFillOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeGreenFillOp(&State{}))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 1 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	texturesColor := texture.Colors[0]
+	_, g, _, a := texturesColor.RGBA()
+	if g != 0xffff || a != 0xffff  {
+		t.Fatal("Invalid color, should be green", g, a)
+	}
+}
+
+func TestMakeBgRectOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeGreenFillOp(&State{}))
+	loop.Post(MakeBgRectOp(&State{}, 1, 2, 3, 4))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 3 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	if !reflect.DeepEqual(texture.Colors[1:], []color.Color{ nil, color.Black }) {
+		t.Fatal("Invalid colors")
+	}
+	if texture.Rectangle.Eq(image.Rect(1, 2, 3, 4)) {
+		t.Fatal("Invalid texture bounds")
+	}
+}
+
+func TestMakeFigureOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeFigureOp(&State{}, 1, 2))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 3 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	shapeColor := color.RGBA{R: 255, G: 230, B: 69, A: 255}
+	if !reflect.DeepEqual(texture.Colors, []color.Color{ nil, shapeColor, shapeColor }) {
+		t.Fatal("Invalid colors", texture.Colors)
+	}
+}
+
+func TestMakeMoveOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+		state State
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeFigureOp(&state, 1, 2))
+	loop.Post(MakeBgRectOp(&state, 1, 2, 3, 4))
+	loop.Post(MakeMoveOp(&state, 1, 2))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 11 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+}
+
+func TestMakeResetOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+		state State
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeFigureOp(&state, 1, 2))
+	loop.Post(MakeBgRectOp(&state, 1, 2, 3, 4))
+	loop.Post(MakeMoveOp(&state, 1, 2))
+	loop.Post(MakeResetOp(&state))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 12 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	if texture.Colors[11] != color.Black {
+		t.Fatal("Invalid last color, should be black")
+	}
+	if state.BgRect != nil || state.Figures != nil {
+		t.Fatal("Sate is not nulled")
 	}
 }
 
@@ -90,6 +221,7 @@ func (m mockScreen) NewWindow(opts *screen.NewWindowOptions) (screen.Window, err
 
 type mockTexture struct {
 	Colors []color.Color
+	Rectangle image.Rectangle
 }
 
 func (m *mockTexture) Release() {}
@@ -100,7 +232,11 @@ func (m *mockTexture) Bounds() image.Rectangle {
 	return image.Rectangle{Max: m.Size()}
 }
 
-func (m *mockTexture) Upload(dp image.Point, src screen.Buffer, sr image.Rectangle) {}
+func (m *mockTexture) Upload(dp image.Point, src screen.Buffer, sr image.Rectangle) {
+	panic("implement me")
+}
+
 func (m *mockTexture) Fill(dr image.Rectangle, src color.Color, op draw.Op) {
 	m.Colors = append(m.Colors, src)
+	m.Rectangle = dr
 }
