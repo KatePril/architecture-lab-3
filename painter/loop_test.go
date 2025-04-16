@@ -85,6 +85,35 @@ func TestMakeGreenFillOp(t *testing.T) {
 	}
 }
 
+func TestMakeBgRectOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeGreenFillOp(&State{}))
+	loop.Post(MakeBgRectOp(&State{}, 1, 2, 3, 4))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 3 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	if !reflect.DeepEqual(texture.Colors[1:], []color.Color{ nil, color.Black }) {
+		t.Fatal("Invalid colors")
+	}
+	if texture.Rectangle.Eq(image.Rect(1, 2, 3, 4)) {
+		t.Fatal("Invalid texture bounds")
+	}
+}
+
 type testReceiver struct {
 	lastTexture screen.Texture
 }
@@ -109,6 +138,7 @@ func (m mockScreen) NewWindow(opts *screen.NewWindowOptions) (screen.Window, err
 
 type mockTexture struct {
 	Colors []color.Color
+	Rectangle image.Rectangle
 }
 
 func (m *mockTexture) Release() {}
@@ -122,4 +152,5 @@ func (m *mockTexture) Bounds() image.Rectangle {
 func (m *mockTexture) Upload(dp image.Point, src screen.Buffer, sr image.Rectangle) {}
 func (m *mockTexture) Fill(dr image.Rectangle, src color.Color, op draw.Op) {
 	m.Colors = append(m.Colors, src)
+	m.Rectangle = dr
 }
