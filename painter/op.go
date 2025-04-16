@@ -56,17 +56,6 @@ func (f OperationFunc) Do(t screen.Texture) bool {
 	return false
 }
 
-// TODO: GreenFill and WhiteFill are unnecessary
-// WhiteFill зафарбовує тестуру у білий колір. Може бути викоистана як Operation через OperationFunc(WhiteFill).
-func WhiteFill(t screen.Texture) {
-	t.Fill(t.Bounds(), color.White, screen.Src)
-}
-
-// GreenFill зафарбовує тестуру у зелений колір. Може бути викоистана як Operation через OperationFunc(GreenFill).
-func GreenFill(t screen.Texture) {
-	t.Fill(t.Bounds(), color.RGBA{G: 0xff, A: 0xff}, screen.Src)
-}
-
 func repaint(state *State, t screen.Texture) {
 	t.Fill(t.Bounds(), state.BackgroundColor, screen.Src)
 	if state.BgRect != nil {
@@ -78,6 +67,7 @@ func repaint(state *State, t screen.Texture) {
 	}
 }
 
+// MakeWhiteFillOp зафарбовує текстуру у білий колір.
 func MakeWhiteFillOp(state *State) Operation {
 	return OperationFunc(func(t screen.Texture) {
 		state.BackgroundColor = color.White
@@ -85,6 +75,7 @@ func MakeWhiteFillOp(state *State) Operation {
 	})
 }
 
+// MakeGreenFillOp зафарбовує текстуру у зелений колір.
 func MakeGreenFillOp(state *State) Operation {
 	return OperationFunc(func(t screen.Texture) {
 		state.BackgroundColor = color.RGBA{G: 0xff, A: 0xff}
@@ -92,6 +83,7 @@ func MakeGreenFillOp(state *State) Operation {
 	})
 }
 
+// MakeBgRectOp малює на фоні прямокутник чорного кольору у вказаних координатах.
 func MakeBgRectOp(state *State, x0, y0, x1, y1 float32) Operation {
 	return OperationFunc(func(t screen.Texture) {
 
@@ -104,6 +96,7 @@ func MakeBgRectOp(state *State, x0, y0, x1, y1 float32) Operation {
 	})
 }
 
+// MakeFigureOp малює нову фігуру Т з центром у вказаних координатах поверх сформованого фону
 func MakeFigureOp(state *State, x, y float32) Operation {
 	return OperationFunc(func(t screen.Texture) {
 		state.Figures = append(state.Figures, FigureT{
@@ -113,6 +106,7 @@ func MakeFigureOp(state *State, x, y float32) Operation {
 	})
 }
 
+// MakeMoveOp переміщує усі фігури попередньо намальовані за допомогою команди figure у вказані координати
 func MakeMoveOp(state *State, x, y float32) Operation {
 	return OperationFunc(func(t screen.Texture) {
 		xCoord := int(float32(t.Size().X) * x)
@@ -124,20 +118,11 @@ func MakeMoveOp(state *State, x, y float32) Operation {
 		}
 		state.Figures = newFigures
 
-		sizeX := (state.BgRect.X1 - state.BgRect.X0) / 2
-		sizeY := (state.BgRect.Y1 - state.BgRect.Y0) / 2
-
-		state.BgRect = &FigureRect{
-			X0: xCoord - sizeX,
-			Y0: yCoord - sizeY,
-			X1: xCoord + sizeX,
-			Y1: yCoord + sizeY,
-		}
-
 		repaint(state, t)
 	})
 }
 
+// MakeResetOp очищує весь поточний стан текстури
 func MakeResetOp(state *State) Operation {
 	return OperationFunc(func(t screen.Texture) {
 		state.BackgroundColor = color.Black

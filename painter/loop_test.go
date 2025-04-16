@@ -12,7 +12,7 @@ import (
 
 func TestOrder(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
 	)
 	loop.Receiver = &receiver
@@ -28,14 +28,14 @@ func TestOrder(t *testing.T) {
 		operations = append(operations, 2)
 	}))
 	loop.StopAndWait()
-	if !reflect.DeepEqual([]int{ 1, 2, 3 }, operations) {
+	if !reflect.DeepEqual([]int{1, 2, 3}, operations) {
 		t.Error("Bad order:", operations)
 	}
 }
 
 func TestMakeWhiteFillOp(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
 	)
 	loop.Receiver = &receiver
@@ -60,7 +60,7 @@ func TestMakeWhiteFillOp(t *testing.T) {
 
 func TestMakeGreenFillOp(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
 	)
 	loop.Receiver = &receiver
@@ -80,20 +80,20 @@ func TestMakeGreenFillOp(t *testing.T) {
 	}
 	texturesColor := texture.Colors[0]
 	_, g, _, a := texturesColor.RGBA()
-	if g != 0xffff || a != 0xffff  {
+	if g != 0xffff || a != 0xffff {
 		t.Fatal("Invalid color, should be green", g, a)
 	}
 }
 
 func TestMakeBgRectOp(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
 	)
 	loop.Receiver = &receiver
 	loop.Start(mockScreen{})
 	loop.Post(MakeGreenFillOp(&State{}))
-	loop.Post(MakeBgRectOp(&State{}, 1, 2, 3, 4))
+	loop.Post(MakeBgRectOp(&State{}, 0.1, 0.1, 0.3, 0.3))
 	loop.Post(UpdateOp)
 	loop.StopAndWait()
 	if receiver.lastTexture == nil {
@@ -106,22 +106,22 @@ func TestMakeBgRectOp(t *testing.T) {
 	if len(texture.Colors) != 3 {
 		t.Fatal("Invalid length", len(texture.Colors))
 	}
-	if !reflect.DeepEqual(texture.Colors[1:], []color.Color{ nil, color.Black }) {
+	if !reflect.DeepEqual(texture.Colors[1:], []color.Color{nil, color.Black}) {
 		t.Fatal("Invalid colors")
 	}
-	if texture.Rectangle.Eq(image.Rect(1, 2, 3, 4)) {
+	if texture.Rectangle.Eq(image.Rect(80, 80, 80, 80)) {
 		t.Fatal("Invalid texture bounds")
 	}
 }
 
 func TestMakeFigureOp(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
 	)
 	loop.Receiver = &receiver
 	loop.Start(mockScreen{})
-	loop.Post(MakeFigureOp(&State{}, 1, 2))
+	loop.Post(MakeFigureOp(&State{}, 0.1, 0.2))
 	loop.Post(UpdateOp)
 	loop.StopAndWait()
 	if receiver.lastTexture == nil {
@@ -135,22 +135,22 @@ func TestMakeFigureOp(t *testing.T) {
 		t.Fatal("Invalid length", len(texture.Colors))
 	}
 	shapeColor := color.RGBA{R: 255, G: 230, B: 69, A: 255}
-	if !reflect.DeepEqual(texture.Colors, []color.Color{ nil, shapeColor, shapeColor }) {
+	if !reflect.DeepEqual(texture.Colors, []color.Color{nil, shapeColor, shapeColor}) {
 		t.Fatal("Invalid colors", texture.Colors)
 	}
 }
 
 func TestMakeMoveOp(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
-		state State
+		state    State
 	)
 	loop.Receiver = &receiver
 	loop.Start(mockScreen{})
-	loop.Post(MakeFigureOp(&state, 1, 2))
-	loop.Post(MakeBgRectOp(&state, 1, 2, 3, 4))
-	loop.Post(MakeMoveOp(&state, 1, 2))
+	loop.Post(MakeFigureOp(&state, 0.1, 0.2))
+	loop.Post(MakeBgRectOp(&state, 0.1, 0.2, 0.3, 0.3))
+	loop.Post(MakeMoveOp(&state, 0.1, 0.2))
 	loop.Post(UpdateOp)
 	loop.StopAndWait()
 	if receiver.lastTexture == nil {
@@ -167,15 +167,15 @@ func TestMakeMoveOp(t *testing.T) {
 
 func TestMakeResetOp(t *testing.T) {
 	var (
-		loop  Loop
+		loop     Loop
 		receiver testReceiver
-		state State
+		state    State
 	)
 	loop.Receiver = &receiver
 	loop.Start(mockScreen{})
-	loop.Post(MakeFigureOp(&state, 1, 2))
-	loop.Post(MakeBgRectOp(&state, 1, 2, 3, 4))
-	loop.Post(MakeMoveOp(&state, 1, 2))
+	loop.Post(MakeFigureOp(&state, 0.1, 0.2))
+	loop.Post(MakeBgRectOp(&state, 0.1, 0.2, 0.3, 0.3))
+	loop.Post(MakeMoveOp(&state, 0.1, 0.2))
 	loop.Post(MakeResetOp(&state))
 	loop.Post(UpdateOp)
 	loop.StopAndWait()
@@ -203,6 +203,7 @@ type testReceiver struct {
 
 func (tr *testReceiver) Update(t screen.Texture) {
 	tr.lastTexture = t
+	tr.lastTexture = t
 }
 
 type mockScreen struct{}
@@ -220,7 +221,7 @@ func (m mockScreen) NewWindow(opts *screen.NewWindowOptions) (screen.Window, err
 }
 
 type mockTexture struct {
-	Colors []color.Color
+	Colors    []color.Color
 	Rectangle image.Rectangle
 }
 

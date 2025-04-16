@@ -50,6 +50,11 @@ func main() {
 		return
 	}
 
+	if err := sendPostRequest("bgrect 0.25 0.25 0.75 0.75"); err != nil {
+		fmt.Printf("Error sending command 'figure 200 200': %v\n", err)
+		return
+	}
+
 	if err := sendPostRequest("update"); err != nil {
 		fmt.Printf("Error sending command 'update': %v\n", err)
 		return

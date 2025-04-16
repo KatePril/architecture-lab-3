@@ -46,7 +46,7 @@ func (l *Loop) Start(s screen.Screen) {
 
 // Post додає нову операцію у внутрішню чергу.
 func (l *Loop) Post(op Operation) {
- 	l.mq.push(op)
+	l.mq.push(op)
 }
 
 // StopAndWait сигналізує про необхідність завершити цикл та блокується до моменту його повної зупинки.
@@ -57,11 +57,10 @@ func (l *Loop) StopAndWait() {
 	<-l.stop
 }
 
-// TODO: Реалізувати чергу подій.
-type messageQueue struct{
+type messageQueue struct {
 	notify chan struct{}
-	mutex sync.Mutex
-	ops []Operation
+	mutex  sync.Mutex
+	ops    []Operation
 }
 
 func (mq *messageQueue) push(op Operation) {
