@@ -140,6 +140,31 @@ func TestMakeFigureOp(t *testing.T) {
 	}
 }
 
+func TestMakeMoveOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+		state State
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeFigureOp(&state, 1, 2))
+	loop.Post(MakeBgRectOp(&state, 1, 2, 3, 4))
+	loop.Post(MakeMoveOp(&state, 1, 2))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 11 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+}
+
 type testReceiver struct {
 	lastTexture screen.Texture
 }
