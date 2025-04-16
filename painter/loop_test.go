@@ -232,7 +232,9 @@ func (m *mockTexture) Bounds() image.Rectangle {
 	return image.Rectangle{Max: m.Size()}
 }
 
-func (m *mockTexture) Upload(dp image.Point, src screen.Buffer, sr image.Rectangle) {}
+func (m *mockTexture) Upload(dp image.Point, src screen.Buffer, sr image.Rectangle) {
+	panic("implement me")
+}
 
 func (m *mockTexture) Fill(dr image.Rectangle, src color.Color, op draw.Op) {
 	m.Colors = append(m.Colors, src)
