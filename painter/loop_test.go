@@ -114,6 +114,32 @@ func TestMakeBgRectOp(t *testing.T) {
 	}
 }
 
+func TestMakeFigureOp(t *testing.T) {
+	var (
+		loop  Loop
+		receiver testReceiver
+	)
+	loop.Receiver = &receiver
+	loop.Start(mockScreen{})
+	loop.Post(MakeFigureOp(&State{}, 1, 2))
+	loop.Post(UpdateOp)
+	loop.StopAndWait()
+	if receiver.lastTexture == nil {
+		t.Fatal("Texture was not updated")
+	}
+	texture, ok := receiver.lastTexture.(*mockTexture)
+	if !ok {
+		t.Fatal("Unexpected texture", receiver.lastTexture)
+	}
+	if len(texture.Colors) != 3 {
+		t.Fatal("Invalid length", len(texture.Colors))
+	}
+	shapeColor := color.RGBA{R: 255, G: 230, B: 69, A: 255}
+	if !reflect.DeepEqual(texture.Colors, []color.Color{ nil, shapeColor, shapeColor }) {
+		t.Fatal("Invalid colors", texture.Colors)
+	}
+}
+
 type testReceiver struct {
 	lastTexture screen.Texture
 }
@@ -150,6 +176,7 @@ func (m *mockTexture) Bounds() image.Rectangle {
 }
 
 func (m *mockTexture) Upload(dp image.Point, src screen.Buffer, sr image.Rectangle) {}
+
 func (m *mockTexture) Fill(dr image.Rectangle, src color.Color, op draw.Op) {
 	m.Colors = append(m.Colors, src)
 	m.Rectangle = dr
